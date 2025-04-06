@@ -1,4 +1,5 @@
-from V0 import execute_agent
+import io
+from V0 import execute_agent, extract_from_cv
 from applications import create_application
 from fastapi import APIRouter, Query, HTTPException, File, UploadFile
 from typing import Optional
@@ -7,6 +8,7 @@ import psycopg2.extras  # Import pour gérer les données JSON
 import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
+from langchain_community.document_loaders import PyPDFLoader
 
 load_dotenv()
 
@@ -73,44 +75,9 @@ class CandidatsCreate(BaseModel):
     address: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
-
-
-@router.post("/application_candidat" , tags=["Applications Candidat"])
-def post_candidat(id_job: str, first_name: str, last_name: str, address: str, email: str, phone: str, cv: UploadFile = File(...)):
-    try:
-        contents = cv.read()
-        with open(cv.filename, 'wb') as f:
-            f.write(contents)
-
-        out = execute_agent(cv = cv.filename)
-        json_out ={
-            'first_name': first_name,
-            'last_name': last_name,
-            'address': address,
-            'email': email,
-            'phone': phone,
-            'cv_pdf': cv.filename,
-            'cv_text': (out)
-        }
-        res = create_candidat(json_out)
-        
-               
-        json_out ={
-            "job_description_id": id_job,
-            "candidats_id": res['id']
-        }
-        res = create_application(json_out)
-
-        print(f"✅ Candidature et candidat créer: ")
-
-        
-        return res
-    
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"❌ Erreur lors de la creation : {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Erreur lors de la creation du candidat: {str(e)}")
+    cv_text: Optional[str] = None
+    cv_pdf: Optional[str] = None  # Expected as an encoded string (e.g., base64)
+    cv_json: Optional[dict] = None  # New field for updating JSON data
 
 # -----------------------------------------------------------------------------
 # POST - Create a Candidat record
@@ -124,13 +91,15 @@ def create_candidat(candidat: CandidatsCreate):
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     RETURNING ID;
     """
+    cv_text = execute_agent(candidat.cv_text)
+    print(cv_text)
     params = (
         candidat.first_name,
         candidat.last_name,
         candidat.address,
         candidat.email,
         candidat.phone,
-        candidat.cv_text,
+        cv_text,
         psycopg2.Binary(candidat.cv_pdf.encode("utf-8")) if candidat.cv_pdf else None,
         psycopg2.extras.Json(candidat.cv_json) if candidat.cv_json else None
     )

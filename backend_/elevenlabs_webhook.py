@@ -1,3 +1,4 @@
+from V0 import execute_agent_analyse
 from fastapi import APIRouter, Request, HTTPException
 import time
 import hmac
@@ -67,7 +68,7 @@ async def elevenlabs_webhook(request: Request):
         # Traitement du payload en JSON après validation de la signature
         payload = await request.json()
         logger.info("Webhook reçu avec succès: %s", payload)
-        # Ici, ajoutez le traitement du payload selon vos besoins
+        out = execute_agent_analyse(request.text)        
         return {"message": "Webhook reçu"}
     except Exception as e:
         logger.error("Erreur lors du traitement du payload: %s", e)
