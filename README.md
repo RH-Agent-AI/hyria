@@ -10,10 +10,6 @@ Hyria est une application web basée sur **FastAPI** et **Streamlit** destinée 
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Lancement de l'application](#lancement-de-lapplication)
-- [Déploiement sur AWS](#déploiement-sur-aws)
-- [Contribuer](#contribuer)
-- [Licence](#licence)
-- [Contact](#contact)
 
 ## Fonctionnalités
 
