@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+psycopg2-binary
+python-dotenv
+python-multipart
+langchain
+langchain_mistralai
+langchain_core
+langchain_community
+IPython
